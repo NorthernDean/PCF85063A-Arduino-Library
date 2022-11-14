@@ -74,6 +74,9 @@ class PCF85063A {
 		uint8_t getAlarmHour();
 		uint8_t getAlarmDay();
 		uint8_t getAlarmWeekday();
+        /* access RAM byte */
+        uint8_t getRamByte();
+        void    setRamByte(uint8_t DataToWrite);
 
 	private:
         TwoWire *Wire_Interface;

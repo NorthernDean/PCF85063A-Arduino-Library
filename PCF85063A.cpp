@@ -306,6 +306,29 @@ void PCF85063A::reset()	// datasheet 8.2.1.3.
 	Wire_Interface->endTransmission();
 }
 
+uint8_t PCF85063A::getRamByte()
+{
+    uint8_t RetVal;
+
+
+	Wire_Interface->beginTransmission(PCF85063A_ADDR);
+	Wire_Interface->write(PCF85063A_RAM_by);
+	Wire_Interface->endTransmission();
+	Wire_Interface->requestFrom(PCF85063A_ADDR, 1);
+	RetVal = Wire_Interface->read();
+
+    return RetVal;
+}
+
+void PCF85063A::setRamByte(uint8_t DataToWrite)
+{
+	Wire_Interface->beginTransmission(PCF85063A_ADDR);
+	Wire_Interface->write(PCF85063A_RAM_by);
+	Wire_Interface->write(DataToWrite);
+	Wire_Interface->endTransmission();
+}
+
+
 
 // PRIVATE
 uint8_t PCF85063A::decToBcd(uint8_t val)
