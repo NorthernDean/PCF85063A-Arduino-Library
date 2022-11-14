@@ -385,3 +385,5 @@ uint8_t PCF85063A::bcdToDec(uint8_t val)
 {
   return ( (val/16*10) + (val%16) );
 }
+
+
