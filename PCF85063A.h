@@ -68,6 +68,9 @@ class PCF85063A {
 		uint8_t getWeekday();
 		uint8_t getMonth();
 		uint16_t getYear();
+        /* set and read RTC time with struct tm */
+        void set_tm(struct tm *tm_to_set);
+        struct tm *get_tm();
 		/* read alarm times */ 			// if return = 99, no alarm
 		uint8_t getAlarmSecond();
 		uint8_t getAlarmMinute();
@@ -90,6 +93,7 @@ class PCF85063A {
 		uint8_t weekday;
 		uint8_t month;
 		uint16_t year;
+        struct tm tm_struct_local;
 		/* alarm */
 		uint8_t alarm_second;
 		uint8_t alarm_minute;

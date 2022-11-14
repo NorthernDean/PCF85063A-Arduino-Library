@@ -104,6 +104,51 @@ uint16_t PCF85063A::getYear()
 	return year;
 }
 
+void PCF85063A::set_tm(struct tm *tm_to_set)
+{
+	Wire_Interface->beginTransmission(PCF85063A_ADDR);
+	Wire_Interface->write(PCF85063A_SECOND_ADDR);
+	Wire_Interface->write(decToBcd( tm_to_set->tm_sec ) );
+	Wire_Interface->write(decToBcd( tm_to_set->tm_min ) );
+	Wire_Interface->write(decToBcd( tm_to_set->tm_hour ) );
+
+    // tm_year is years since 1900, or ActualYear - 1900.
+    // convert to RTC year format 0-99 from 1970 to 2069, so subtract 70.
+	year = tm_to_set->tm_year - 70;
+
+	Wire_Interface->write( decToBcd(tm_to_set->tm_mday) );
+	Wire_Interface->write( decToBcd(tm_to_set->tm_wday) );
+	Wire_Interface->write( decToBcd(tm_to_set->tm_mon+1) );
+	Wire_Interface->write( decToBcd(year) );
+	Wire_Interface->endTransmission();
+}
+
+struct tm *PCF85063A::get_tm()
+{
+	Wire_Interface->beginTransmission(PCF85063A_ADDR);
+	Wire_Interface->write(PCF85063A_SECOND_ADDR);					// datasheet 8.4.
+	Wire_Interface->endTransmission();
+
+	Wire_Interface->requestFrom(PCF85063A_ADDR, 7);
+
+	while( Wire_Interface->available() )
+	{
+		tm_struct_local.tm_sec = bcdToDec( Wire_Interface->read() & 0x7F ); 	// ignore bit 7
+		tm_struct_local.tm_min = bcdToDec( Wire_Interface->read() & 0x7F );
+		tm_struct_local.tm_hour = bcdToDec( Wire_Interface->read() & 0x3F );	// ignore bits 7 & 6, assume 24 hr mode
+		tm_struct_local.tm_mday = bcdToDec( Wire_Interface->read() & 0x3F );
+		tm_struct_local.tm_wday = bcdToDec( Wire_Interface->read() & 0x07 );	// ignore bits 7,6,5,4 & 3
+		tm_struct_local.tm_mon = bcdToDec( Wire_Interface->read() & 0x1F );		// ignore bits 7,6 & 5
+        if  (tm_struct_local.tm_mon > 0)
+            tm_struct_local.tm_mon--;
+		tm_struct_local.tm_year = bcdToDec( Wire_Interface->read()) + 70;
+        tm_struct_local.tm_yday = 0;    // Have no idea day of year, for now set to zero.  Could calculate, but, meh.
+        tm_struct_local.tm_isdst = 0;   // Have no idea of DST status, set to zero.
+	}
+
+    return &tm_struct_local;
+}
+
 void PCF85063A::enableAlarm() // datasheet 8.5.6.
 {
 	// check Table 2. Control_2
